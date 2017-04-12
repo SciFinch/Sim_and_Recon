@@ -1,0 +1,142 @@
+This file details my notes whilst writing this code (memos, info on code structure, etc)
+
+
+%%%%%%%%%%%%%%%%% TO DOS %%%%%%%%%%%%%%%%%%%
+The following need to be implemented/changed/worked on:
+1. A method of robustly including possibly-varying orientation of images and motion fields
+	- Currently: Using hard-coded HF,AP,RL labels to account for this explicitly
+		     (this requires a manual step before including data... this is ok)
+2. Reimplement motion so that it is all contained in one struct, perhaps
+3. Once transformers and projectors are complete, include handling for extd/non-extd imgs
+4. Hard-code fprintf output to a log file rather than the command line
+5. How do I want to implement the extFOV function? Should it be within the projector 
+functions?
+6. When simulating normalisation, drop in efficiency of each detector needs to be consistent
+across all segments of the sinogram (i.e., there needs to be some way to encode detector 
+itself, and then find the joint efficiencies)
+6.1. This also needs to be cross-examined: is there support for APIRL's varying methods of 
+reading norm files (is this even true any more?). E.g., should it be .a or .n format 
+(and is there an e7tools-free method to achieve this?)
+6.2. Need to implement a function which sims detector efficiencies (probably with hard-coded
+variables, derived from real data)
+6.3. Need to redress this whole problem really, since I'm on a train
+6.4. If the efficiencies are simulated, there needs to be an effective '.n' file saved
+somewhere for when it is required for reconstruction
+7. Need a function which generates the scanner information for span-11 sinograms, including
+detector positions, identities, etc
+8. Test any scatter estimators for sensitivity to motion. Might be able to speed the 
+algorithm up (by avoiding for datasets with max displacement below a threshold) or 
+multiple calculations could be avoided entirely. It might be worth referring to STIR
+on this, sincethat provides a suggestion as to how low-res the image can be for SSS.
+9. Need to implement skipping sims/loading sims/saving sims/real datasets (CKX data)
+   This is done using the flags struct (fullSimulation = true/false, what else..?)
+10. Run the whole program in 32bit (might need converting to 64bit for projectors)
+11. Finish entering info in to GetDataInfo, and don't forget to have any pathnames end in a
+filename.
+ 
+Raw ideas...
+- Resolution is currently unaccounted for
+- High res images as simulation input
+- Ideally need some global flags for choosing varying options (esp Norm sim: data-based,
+simulated, or 100% efficiency?)
+- Including STIR?
+
+
+
+%%%%%%%%%%%%%%%%% GENERAL NOTES %%%%%%%%%%%%%%%%%%%
+
+1. All image volumes and sinograms are implemented as cells. The cells are labelled by
+   gate number, to enforce the idea that gates are not (necessarily) continuously related,
+   but rather discrete datasets in their own right.
+	- Each cell contains the standard array image-volume datatype (image or sinogram).
+	- This also applies to motion fields, but these are currently implemented with
+	  each direction in its own respective data variable.
+
+2. The implementation of gates in cells requires some thought when feeding a cell array
+   into functions which handle each cell individually (e.g., projection and transformation)
+
+3. Transformer functions and projection functions ASSUME that the images they receive are 
+   extended-FOV images. Thise could easily be checked usng the pxinfo comprison with the
+   images used as input
+
+%%%%%%%%%%%%%%%%% GLOBAL VARIABLES %%%%%%%%%%%%%%%%%%%
+There are several 'global' variables (in the sense that they are fed into & reqd by most functions).
+These are:
+- struct datainfo
+	- Only manually-set entry is dataID, a string. Rest initialised automatically via fn.
+	- pathnames (inc: sinogram locs, motion locs, respsig locs, normlocs (if existant))
+	- the reference MR image
+	- Entries:
+	-- MotionFields
+	--- Fwd/Bck
+	---- Pathname/Filename
+	-- MotionModels
+	--- Fwd/Bck
+	---- Pathname/Filename
+	-- 
+
+
+- string projectorType: this defines which projectors will be used. Options:
+	- Matlab (radon and iradon, plus associated variables)
+	- CECR
+	- APIRL
+- string interpType: which form of interpolation will be used in each transformation (where poss)
+	- nearest
+	- linear
+	- cubic
+	- spline
+- struct pxinfo: contains all info on the dimensions of the imaging data (inc metre conversion)
+	- pxSize (size of image vols)
+	- padSize (amount of padding either side in extended FOV image)
+	- pxSizePadded (applies padSize to pxSize to calc extended image vol size)
+	- pxdims (size of each pixel/voxel in mm)
+	- sino (size of sinograms) **this needs automating (with span support)
+
+%%%%%%%%%%%%%%%%% SIMULATION FUNCTIONS  %%%%%%%%%%%%%%%%%%%
+The code will simulate various aspects of the acquisition process (currently in an analytical,
+rather than monte carlo, sense). This includes the following:
+- SimFlag: boolean options for including any of the aspects below
+- Trues: underlying true distribution of radiotracer, determined by FDG maps/phantoms
+- AFs: Uses distribution of attenuation coefficient to determine attenuation factor sinos
+- Norm: Returns geometric sensitivity and, where possible, detecctor sensitivity of dataset
+- Scatters: Uses above to simulate diffuse glow of scattered annihilation photons
+- Randoms: Simple simulation of approx. uniform background radiation
+- Prompts (noiseless and noisy): combines above and, if opted, simulates Poisson noise
+Note: Noise is included using the PoissonSampling function 
+
+%%%%%%%%%%%%%%%%% FUNCTIONS DE-STUBBED  %%%%%%%%%%%%%%%%%%%
+Here is a list of the functions included in this project. 1 or 0 labels whether each 
+sub-function has been coded up to version 1.0, or whether it is still a stub, respectively.
+This should be expanded to include various levels of testing.
+
+1 - CalculateSensitivity
+1 - EstimateFieldsFromModel
+1 - EstimateFieldsFromModelDeriv (might want to link to the above)
+0 - GenerateROI
+0 - main
+1 - CalculateLogLikelihood [Not currently certain about LL for multiple frames (could separate)]
+1 - PoissonSampling (needs testing. Only uses MATLAB functions.)
+1 - ReadMaps [needs to check orientation (check rl and ap end-planes for zeros, except thesis2 maybe)]
+1 - ReadMotionFields [needs to check orientation flag]
+1 - ReadMotionModels [needs to check orientation flag][Still stubbed, but functional]
+1 - ReadRespsigs [Functioning stub]
+1 - SimulateAttFactors [needs apirl checking]
+1 - SimulateNormFactors
+1 - SimulateRandomsDistribution [stubbed, but functional]
+1 - SimulateScatterDistribution
+1 - SimulateTrueDistributon
+0 - SimulateDetectorEfficiences
+1 - TransformImage
+1 - TransformMaps
+1 - FwdProject 
+1 - BckProject 
+1 - ToggleImagePadding
+1 - GetDatasetInfo [needs completing with all datasets]
+1 - InitialiseCECR
+0 - AutoLoadImage
+1 - ConvScatterEstimation (supports rough-and-ready Bailey93 only)
+% Not even initialised yet:
+0 - CalcWeightedSinos
+0 - InitialseApirl
+0 - ReadRealData
+0 - ReadDynamicMR
