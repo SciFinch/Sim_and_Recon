@@ -1,15 +1,18 @@
 This file details my notes whilst writing this code (memos, info on code structure, etc)
 
+NOTE: there is a functioning version of motion model form/app code in the simulation
+generator
 
 %%%%%%%%%%%%%%%%% TO DOS %%%%%%%%%%%%%%%%%%%
 The following need to be implemented/changed/worked on:
+*** STANDARDISE DIRECTIONS AND FILE NAMES/TYPES
 1. A method of robustly including possibly-varying orientation of images and motion fields
 	- Currently: Using hard-coded HF,AP,RL labels to account for this explicitly
 		     (this requires a manual step before including data... this is ok)
 2. Reimplement motion so that it is all contained in one struct, perhaps
-3. Once transformers and projectors are complete, include handling for extd/non-extd imgs
+3. DONE. Once transformers and projectors are complete, include handling for extd/non-extd imgs
 4. Hard-code fprintf output to a log file rather than the command line
-5. How do I want to implement the extFOV function? Should it be within the projector 
+5. DONE. How do I want to implement the extFOV function? Should it be within the projector 
 functions?
 6. When simulating normalisation, drop in efficiency of each detector needs to be consistent
 across all segments of the sinogram (i.e., there needs to be some way to encode detector 
@@ -64,7 +67,7 @@ There are several 'global' variables (in the sense that they are fed into & reqd
 These are:
 - struct datainfo
 	- Only manually-set entry is dataID, a string. Rest initialised automatically via fn.
-	- pathnames (inc: sinogram locs, motion locs, respsig locs, normlocs (if existant))
+	- pathnames (inc: sinogram locs, motion locs, respsig locs, normlocs (if extant))
 	- the reference MR image
 	- Entries:
 	-- MotionFields
@@ -135,8 +138,9 @@ This should be expanded to include various levels of testing.
 1 - InitialiseCECR
 0 - AutoLoadImage
 1 - ConvScatterEstimation (supports rough-and-ready Bailey93 only)
+1 - CalcWeightedSinos
+0 - FormMotionModel [needs to be made compatible with rest of project]
 % Not even initialised yet:
-0 - CalcWeightedSinos
 0 - InitialseApirl
 0 - ReadRealData
 0 - ReadDynamicMR

@@ -1,8 +1,9 @@
-% Attempt to structure this code properly
+%% Main execution file for project
+addpath('C:\Users\db12\Documents\Sim_and_Recon\branches\get_simpleCase_working');
 
 %% Initialisation
 % general
-datainfo = 'stub';
+datainfo = 'simple';
 interpType = 'linear';
 projectorType = 3;
 flags.fullSimulation = true; % if false, either CKX dataset, or load sims
