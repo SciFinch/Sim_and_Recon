@@ -8,7 +8,11 @@ function [imageArray,imageSize,imagePixelDims] = AutoLoadImage(fullFileName,varN
 %	name can be provided (as a string in varName), which will select the specific
 %	variable from the .mat file corresponding to the image.
 
-if nvargin == 1
+if isempty(fullFileName)
+    error('No image filename has been provided');
+end
+
+if nargin == 1
 	varName = [];
 end
 
@@ -37,9 +41,9 @@ elseif strfind(fullFileName, '.nii')
     formatStr = 'nifti';
 elseif strfind(fullFileName, '.hv')
 	% is in interfile format
-	formatStr = 'interfile';
+	%formatStr = 'interfile';
 	error('Support for loading interfile has not yet been implemented')
-elseif strfind(fullFilename, '.dat')
+elseif strfind(fullFileName, '.dat')
 	error('Filename provided is .dat format, which is not [yet] supported')
 else
     error('Unable to determine the motion field file format');
