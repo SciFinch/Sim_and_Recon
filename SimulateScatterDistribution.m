@@ -34,7 +34,7 @@ case 'none'
 case 'simple'
 	scatterSinograms = cell(1,nToSimulate);
 	for it = 1:nToSimulate
-		fprintf('== Simulating scatter sinograms (simple): Dynamic sinogram %d/%d',it,nToSimulate);
+		fprintf(' - Simulating scatter sinograms (simple): Dynamic sinogram %d/%d',it,nToSimulate);
 		scatterSinograms{it} = ConvScatterEstimation(trueSino{it},attFactorSino{it},randSino{it},'Bailey93');
 	end
 % Single scatter simulation (Watson 2000):
