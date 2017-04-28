@@ -25,11 +25,13 @@ if iscell(imgToResize)
 	nToResize = numel(imgToResize);
 else
 	nToResize = 1;
-	imgToResize{1} = imgToResize;
+	thisImageCell{1} = imgToResize;
+    imgToResize = thisImageCell;
+    clear thisImageCell;
 end
 
 % Determine whether the image is to be padded or cropped
-currSize = size(imgToProject{1});
+currSize = size(imgToResize{1});
 if abs(sum(currSize(1:3) - pxinfo.pxSize)) < 1E-4
 	flags.isPadded = false;
 elseif abs(sum(currSize(1:3) - pxinfo.pxSizePadded)) < 1E-4
@@ -39,29 +41,24 @@ else
 end
 
 % Apply cropping/padding to each input image:
-for it = nToResize
-
-	switch flags.isPadded
-	% If currently padded, crop:
-	case true
-
-		% Calculate original pixel subscripts in terms of padded subscripts:
-		x_start = pxinfo.padSize(1) + 1;
-		x_end = pxinfo.pxSizePadded (1) - pxinfo.padSize(1);
-		y_start = pxinfo.padSize(2) + 1;
-		y_end = pxinfo.pxSizePadded (2) - pxinfo.padSize(2);
-		z_start = pxinfo.padSize(3) + 1;
-		z_end = pxinfo.pxSizePadded (3) - pxinfo.padSize(3);
-
-		% Crop to original subscripts:
-		resizedImage{it} = imgToResize{it}(x_start:x_end,y_start:y_end,z_start:z_end);
-
-	% If currently cropped, pad:
-	case false
-
-		% Pad image using padSize variables
-		resizedImage{it} = padarray(imgToResize{it},pxinfo.padSize,0,'both');
-	end
+for it = 1:nToResize
+    switch flags.isPadded
+        % If currently padded, crop:
+        case true
+            % Calculate original pixel subscripts in terms of padded subscripts:
+            x_start = pxinfo.padSize(1) + 1;
+            x_end = pxinfo.pxSizePadded (1) - pxinfo.padSize(1);
+            y_start = pxinfo.padSize(2) + 1;
+            y_end = pxinfo.pxSizePadded (2) - pxinfo.padSize(2);
+            z_start = pxinfo.padSize(3) + 1;
+            z_end = pxinfo.pxSizePadded (3) - pxinfo.padSize(3);
+            % Crop to original subscripts:
+            resizedImage{it} = imgToResize{it}(x_start:x_end,y_start:y_end,z_start:z_end);
+            % If currently cropped, pad:
+        case false
+            % Pad image using padSize variables
+            resizedImage{it} = padarray(imgToResize{it},pxinfo.padSize,0,'both');
+    end
 end
 
 end

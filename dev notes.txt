@@ -129,9 +129,9 @@ This should be expanded to include various levels of testing.
 1 - SimulateScatterDistribution
 1 - SimulateTrueDistributon
 0 - SimulateDetectorEfficiences
-1 - TransformImage
-1 - TransformMaps
-1 - FwdProject 
+1 - TransformImage [warning: hard-coded orientations]
+1 - TransformMaps [warning: hard-coded orientations]
+1 - FwdProject [has a hard-coded 127 - adapt for span]
 1 - BckProject 
 1 - ToggleImagePadding
 1 - GetDatasetInfo [needs completing with all datasets]
@@ -139,7 +139,8 @@ This should be expanded to include various levels of testing.
 0 - AutoLoadImage
 1 - ConvScatterEstimation (supports rough-and-ready Bailey93 only)
 1 - CalcWeightedSinos
-0 - FormMotionModel [needs to be made compatible with rest of project]
+1 - FormMotionModel 
+1 - CalculateModelCoeffs
 % Not even initialised yet:
 0 - InitialseApirl
 0 - ReadRealData

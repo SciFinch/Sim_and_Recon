@@ -11,19 +11,30 @@ function [respSigs] = ReadRespsigs(datasetStr)
 % 2. For respsigAll, check nDynamics == numel(respsigAll)
 
 
-warning('ReadRespsigs is currently [mostly] a stub');
 
 datasetInfoStruct = GetDatasetInfo(datasetStr);
 
-%nDynamics = datasetInfoStruct.nDynamics;
-load(datasetInfoStruct.respSig.fn);
-
-
-
-% Assign relevant respiratory values
-respSigs.all = [0];
-respSigs.training = [0];
-respSigs.testing = [0];
+switch datasetStr
+    case 'simple'
+        loadedData = load(datasetInfoStruct.respSig.fn);
+        respSigs.all = loadedData.respSig_all;
+        respSigs.forModel = loadedData.respSig_all;
+        respSigs.forSimulation = loadedData.respSig_all;
+        clear loadedData
+    otherwise
+        warning('ReadRespsigs is currently [mostly] a stub');
+        %nDynamics = datasetInfoStruct.nDynamics;
+        load(datasetInfoStruct.respSig.fn);
+        
+        if numel(nav_all) == datasetInfoStruct.nDynamics
+            respSigs.all = nav_all;
+        else
+            % Assign relevant respiratory values
+            respSigs.all = [0];
+            respSigs.training = [0];
+            respSigs.testing = [0];
+        end
+end
 
 end
 

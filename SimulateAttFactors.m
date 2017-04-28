@@ -15,7 +15,7 @@ end
 if mx_mu > 0.02
 	error('Mu-maps appear to be in per-cm. Please ensure they are provided in per mm.');
 else
-	fprintf('== Simulating attenuation factor sinogram(s)\n')
+	fprintf(' - Simulating attenuation factor sinogram(s)\n')
 end
 
 % The extent to which the attenuation will be modelled in this function depends on the type of projector
