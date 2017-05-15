@@ -33,15 +33,15 @@ switch projectorType
     % - MATLAB and CECR projectors require manual AF modelling
     % MATLAB projectors:
     case 1
+        totalMus = FwdProject(transMuMapprojectorType,pixelInfo);
         for it = 1:nToProject
-            totalMus = FwdProject(transMuMap{it},projectorType,pixelInfo);
-            attFactorSinograms{it} = exp( -cell2mat(totalMus) );
+            attFactorSinograms{it} = exp( -totalMus{it} );
         end
     % CECR projectors
     case 2
+        totalMus = FwdProject(transMuMap,projectorType,pixelInfo);
         for it = 1:nToProject
-            totalMus = FwdProject(transMuMap{it},projectorType,pixelInfo);
-            attFactorSinograms{it} = exp( -cell2mat(totalMus) );
+            attFactorSinograms{it} = exp( -totalMus{it} );
         end
     % APIRL calculates ACF sinograms directly
     case 3

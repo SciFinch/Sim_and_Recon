@@ -23,6 +23,8 @@ pxinfo.sino = [344 252 837]; % size of (3D, span-11) sinogram
 nGates = 1;
 scatterMthd = 'conv';
 randMthd = 'simple';
+totCounts = 75E6;
+dynamicWeights = ones(1,10)/10;
 
 % reconstruction specifications
 nIterations = 1;
@@ -62,7 +64,11 @@ warning('ensure that cm conversion is included in all atten procs')
 
 % Generate normalisation factor sinograms
 sim.norm = SimulateNormFactors(projectorType,pxinfo,datainfo);
-
+for it = 1:nGates
+    temp{it} = sim.norm{1};
+end
+sim.norm = temp; clear temp;
+warning('Need a better way to handle sim.norm for multiple gates')
 warning('Need to revist S & R sims - c.f.: dynPET sims')
 % Generate randoms sinograms
 sim.randoms = SimulateRandomsDistribution(transEmMap,randMthd,projectorType,pxinfo);

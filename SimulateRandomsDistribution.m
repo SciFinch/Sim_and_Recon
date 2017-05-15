@@ -1,5 +1,5 @@
-function [randomsSinogram] = SimulateRandomsDistribution(transEmMap,RandMthd,projectorType,pixelInfo)
-%SIMULATERANDOMSDISTRIBUTION [randomsSinogram] = SimulateRandomsDistribution(transEmMap,RandMthd,projectorType,pixelInfo)
+function [randomsSinogram] = SimulateRandomsDistribution(transEmMap,randMthd,projectorType,pixelInfo)
+%SIMULATERANDOMSDISTRIBUTION [randomsSinogram] = SimulateRandomsDistribution(transEmMap,randMthd,projectorType,pixelInfo)
 %   This function simulates a distribution of random background radiation. For now, this is a simple
 % 	constant-valued sinogram, or an estimate straight from data. This could be simulated properly (?).
 
@@ -13,18 +13,24 @@ else
 	nToSimulate = 1;
 end
 
+if projectorType == 1
+    baseSinoSize = [pixelInfo.sino(1) pixelInfo.sino(2) 127];
+else
+    baseSinoSize = pixelInfo.sino;
+end
+
 % Simulate according to the method suggested
-switch RandMthd
+switch randMthd
 case 'none'
 	randomsSinogram = cell(1,nToSimulate);
 	for it = 1:nToSimulate
-		randomsSinogram{it} = zeros(pixelInfo.sino);
+		randomsSinogram{it} = zeros(baseSinoSize);
 	end
 case 'simple'
 	constSimpleRands = 10;
 	randomsSinogram = cell(1,nToSimulate);
 	for it = 1:nToSimulate
-		randomsSinogram{it} = constSimpleRands*(1./nToSimulate)*ones(pixelInfo.sino);
+		randomsSinogram{it} = constSimpleRands*(1./nToSimulate)*ones(baseSinoSize);
 	end
 otherwise
 	error('Unrecognised randoms simulation method requested - has it been implemented yet?');
