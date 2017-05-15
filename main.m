@@ -1,5 +1,5 @@
 %% Main execution file for project
-addpath('C:\Users\db12\Documents\Sim_and_Recon\branches\TestProjectors');
+addpath('C:\Users\db12\Sim_and_Recon\branches\TestProjectors');
 % Useful for testing:
 %imagesc(squeeze(imageCell{1}(:,110,1:127))'); axis image; colormap;
 
@@ -90,11 +90,10 @@ warning('save/load simulation stub here')
 %% Open Files for Reconstruction
 
 % Load motion models
-[phi.HF,phi.AP,phi.RL] = ReadMotionModels(datainfo,'fwd',pixelInfo);
-[phi.HFinv,phi.APinv,phi.RLinv] = ReadMotionModels(datainfo,'inv',pixelInfo);
+motionModel = ReadMotionModels(datainfo);
 
 % Load respiratory signals
-[respSigs] = ReadRespsigs(datainfo);
+respSigs = ReadRespsigs(datainfo);
 
 %% Reconstruction
 
@@ -102,7 +101,7 @@ warning('save/load simulation stub here')
 dataSinograms = sim.noisyPrompts;
 
 % - Generate ROI image
-roiImage = GenerateROI(datainfo,regionID,pixelInfo);
+roiImage = GenerateROI(datainfo,regionID,pxinfo); %TODO
 
 % - Find normalisation image [can relate to SimulateNormFactors above]
 % ...
@@ -119,8 +118,8 @@ for itNum = 1:nIterations
     % IMAGE UPDATE:
     
     % Estimate motion fields
-    [dHF,dAP,dRL] = EstimateFieldsFromModel(respSigEst,phi,pxinfo);
-    [dHFinv,dAPinv,dRLinv] = EstimateFieldsFromModel(respSigEst,phi_inv,pxinfo);
+    [dHF,dAP,dRL] = EstimateFieldsFromModel(respSig,motionModel,'fwd',pxinfo);
+    [dHFinv,dAPinv,dRLinv] = EstimateFieldsFromModel(respSig,motionModel,'inv',pxinfo);
     
     % Transform emission and attenuation map estimates
     [transEmMap,transMuMap] = TransformMaps(emMap,muMap,pxinfo,dHF,dAP,dRL,interpType,0);

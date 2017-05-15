@@ -1,6 +1,6 @@
 %% This code is used to generate the simple data used to test this project
 addpath('C:\Users\db12\Dropbox\Work_Docs\MATLAB Scripts');
-addpath('C:\Users\db12\Sim_and_Recon\branches\GetBasicVersionRunning');
+addpath('C:\Users\db12\Sim_and_Recon\branches\TestProjectors');
 simpleData_basePath = 'C:\Users\db12\Dropbox\Work_Docs\SimpleData\';
 datainfo = GetDatasetInfo('simple');
 
