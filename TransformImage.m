@@ -59,16 +59,35 @@ otherwise
     error('Number of images provided is inconsistent with the number of tranformations');
 end
 
-fprintf('== Transforming %d image(s) with %d motion field(s)\n',nImagesToTransform,nTransformations)
+fprintf(' - Transforming %d image(s) with %d motion field(s)\n',nImagesToTransform,nTransformations)
 
-% Assuming orientation [HF AP RL]
+% Check whether input image is padded or not (this will determine whether
+% the rest of the input data should be padded or not)
+flags.isPadded.imgToTrans = CheckPadding(imgToTrans,pxinfo);
+flags.isPadded.motionFields = CheckPadding(dHF,pxinfo);
+
+% - Define coordinate system:
+% (Assuming orientation [HF AP RL])
 warning('Orientations in TransformImage need verifying')
-ap_vec = linspace(pxinfo.pxdims(1),pxinfo.pxdims(1)*pxinfo.pxSizePadded(1),pxinfo.pxSizePadded(1));
-rl_vec = linspace(pxinfo.pxdims(2),pxinfo.pxdims(2)*pxinfo.pxSizePadded(2),pxinfo.pxSizePadded(2));
-hf_vec = linspace(pxinfo.pxdims(3),pxinfo.pxdims(3)*pxinfo.pxSizePadded(3),pxinfo.pxSizePadded(3));
-
+if flags.isPadded.imgToTrans == true
+    % i.e., use padded coordinate system:
+    ap_vec = linspace(pxinfo.pxdims(1),pxinfo.pxdims(1)*pxinfo.pxSizePadded(1),pxinfo.pxSizePadded(1));
+    rl_vec = linspace(pxinfo.pxdims(2),pxinfo.pxdims(2)*pxinfo.pxSizePadded(2),pxinfo.pxSizePadded(2));
+    hf_vec = linspace(pxinfo.pxdims(3),pxinfo.pxdims(3)*pxinfo.pxSizePadded(3),pxinfo.pxSizePadded(3));
+else
+    ap_vec = linspace(pxinfo.pxdims(1),pxinfo.pxdims(1)*pxinfo.pxSize(1),pxinfo.pxSize(1));
+    rl_vec = linspace(pxinfo.pxdims(2),pxinfo.pxdims(2)*pxinfo.pxSize(2),pxinfo.pxSize(2));
+    hf_vec = linspace(pxinfo.pxdims(3),pxinfo.pxdims(3)*pxinfo.pxSize(3),pxinfo.pxSize(3));
+end
 [coords.ap,coords.rl,coords.hf] = ndgrid(ap_vec,rl_vec,hf_vec);
 clear *vec;
+
+% If image is padded, but motion fields are not, make compatible:
+if flags.isPadded.imgToTrans && ~flags.isPadded.motionFields 
+    dAP = ToggleImagePadding(dAP,pxinfo);
+    dRL = ToggleImagePadding(dRL,pxinfo);
+    dHF = ToggleImagePadding(dHF,pxinfo);
+end
 
 %% Perform transformations
 transImg = cell(1,nTransformations);
@@ -93,7 +112,7 @@ if (~iscell(imgToTrans) && (nTransformations == 1))
     transImg = transImg{1};
 end
 
-warning('TransformImgs has not been data-tested yet');
+warning('TransformImage has not been data-tested yet');
 
 end
 

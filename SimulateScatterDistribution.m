@@ -17,9 +17,10 @@ warning('SimulateScatterDistribution is currently a stub');
 % ! Should these be scaled according to breathing pattern, or is that done later?
 
 % Figure out how many scatter sinograms are needed 
-if iscell(transEmMap)
-	nToSimulate = numel(transEmMap);
+if iscell(trueSino)
+	nToSimulate = numel(trueSino);
 else
+    error('non-cell scatter est is stubbed')
 	nToSimulate = 1;
 end
 
@@ -31,10 +32,10 @@ case 'none'
 		scatterSinograms{it} = zeros(pixelInfo.sino);
 	end
 % Simple convolution-based scatter simulation (Bailey 1993)
-case 'simple'
+case 'conv'
 	scatterSinograms = cell(1,nToSimulate);
 	for it = 1:nToSimulate
-		fprintf(' - Simulating scatter sinograms (simple): Dynamic sinogram %d/%d',it,nToSimulate);
+		fprintf(' - Simulating scatter sinograms (simple conv): Dynamic sinogram %d/%d',it,nToSimulate);
 		scatterSinograms{it} = ConvScatterEstimation(trueSino{it},attFactorSino{it},randSino{it},'Bailey93');
 	end
 % Single scatter simulation (Watson 2000):

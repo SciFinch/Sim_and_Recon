@@ -1,11 +1,13 @@
 %% Main execution file for project
-addpath('C:\Users\db12\Documents\Sim_and_Recon\branches\get_simpleCase_working');
+addpath('C:\Users\db12\Documents\Sim_and_Recon\branches\TestProjectors');
+% Useful for testing:
+%imagesc(squeeze(imageCell{1}(:,110,1:127))'); axis image; colormap;
 
 %% Initialisation
 % general
 datainfo = 'simple';
 interpType = 'linear';
-projectorType = 3;
+projectorType = 1;
 flags.fullSimulation = true; % if false, either CKX dataset, or load sims
 
 % dimensional data
@@ -33,6 +35,10 @@ regionID = 'all';
 % NOTE TO SELF: - make sure you standardise orientation wrt projtr; arraydim.
 %               - play around with data formats to reduce resource usage
 [emMap,muMap] = ReadMaps(datainfo,pxinfo);
+if strcmp(datainfo,'simple')
+    muMap = muMap/10;
+    warning('Edit the simple dataset muMaps to be in per mm');
+end
 
 % Read in the motion fields used to simulate motion positions
 [dHF,dAP,dRL] = ReadMotionFields(datainfo,'fwd',pxinfo);
@@ -44,22 +50,25 @@ regionID = 'all';
 
 % Generate motion transformed distribution maps
 [transEmMap,transMuMap] = TransformMaps(emMap,muMap,pxinfo,dHF,dAP,dRL,interpType,0);
+%clear emMap muMap dHF dAP dRL dHFinv dAPinv dRLinv;
 
 % Generate true sinograms
 sim.trues = SimulateTrueDistribution(transEmMap,projectorType,pxinfo);
+clear transEmMap;
 
 % Generate attenuation factor sinograms
-sim.AFs = SimulateAttFactors(transEmMap,projectorType,pxinfo);
+sim.AFs = SimulateAttFactors(transMuMap,projectorType,pxinfo);
 warning('ensure that cm conversion is included in all atten procs')
 
 % Generate normalisation factor sinograms
 sim.norm = SimulateNormFactors(projectorType,pxinfo,datainfo);
 
-% Generate scatter sinograms
-sim.scatters = SimulateScatterDistribution(transEmMap,scatterMthd,projectorType,pxinfo);
-
+warning('Need to revist S & R sims - c.f.: dynPET sims')
 % Generate randoms sinograms
 sim.randoms = SimulateRandomsDistribution(transEmMap,randMthd,projectorType,pxinfo);
+
+% Generate scatter sinograms
+sim.scatters = SimulateScatterDistribution(sim.trues,sim.AFs,sim.randoms,scatterMthd,projectorType,pxinfo);
 
 % Calculate the distribution of prompt counts, on average
 for g = 1:nGates
