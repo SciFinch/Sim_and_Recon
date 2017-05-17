@@ -33,7 +33,7 @@ switch projectorType
     % - MATLAB and CECR projectors require manual AF modelling
     % MATLAB projectors:
     case 1
-        totalMus = FwdProject(transMuMapprojectorType,pixelInfo);
+        totalMus = FwdProject(transMuMap,projectorType,pixelInfo);
         for it = 1:nToProject
             attFactorSinograms{it} = exp( -totalMus{it} );
         end

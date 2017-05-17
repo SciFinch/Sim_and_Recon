@@ -20,7 +20,7 @@ pxinfo.pxdims = [2.0445 2.0445 2.03125]; % dimensions of projected image voxels 
 pxinfo.sino = [344 252 837]; % size of (3D, span-11) sinogram
 
 % simulation specifications
-nGates = 1;
+nGates = 10;
 scatterMthd = 'conv';
 randMthd = 'simple';
 totCounts = 75E6;
@@ -56,7 +56,6 @@ end
 
 % Generate true sinograms
 sim.trues = SimulateTrueDistribution(transEmMap,projectorType,pxinfo);
-clear transEmMap;
 
 % Generate attenuation factor sinograms
 sim.AFs = SimulateAttFactors(transMuMap,projectorType,pxinfo);
@@ -82,7 +81,7 @@ for g = 1:nGates
 end
 
 % Simulate the Poisson sampling process
-[sim.noisyPrompts] = PoissonSampling(sim.prompts,totCounts,dynamicWeights);
+[sim.noisyPrompts] = PoissonSampling(sim.prompts,totCounts,dynamicWeights,0);
 
 % Option for loading/saving rather than generating every time
 warning('save/load simulation stub here')
@@ -102,14 +101,31 @@ dataSinograms = sim.noisyPrompts;
 
 % - Generate ROI image
 roiImage = GenerateROI(datainfo,regionID,pxinfo); %TODO
+roiSino = FwdProject(roiImage,projectorType,pxinfo);
 
 % - Find normalisation image [can relate to SimulateNormFactors above]
-% ...
+% est.norm = SimulateNormFactors(projectorType,pxinfo,datainfo);
+% for it = 1:nGates
+%     temp{it} = est.norm{1};
+% end
+% est.norm = temp; clear temp;
+est.norm = sim.norm;
+
+%
+est.randoms = sim.randoms;
+est.scatters = sim.scatters;
 
 % - initial estimates [including soft-restart from specified point]
 % ...
-emEst = zeros(pxinfo.pxSizePadded);
+emEst = ones(pxinfo.pxSizePadded);
+muEst = ToggleImagePadding(muMap,pxinfo);
 respSigEst = zeros(1,nGates) + min(respSigs.all) + 0.5*range(respSigs.all);
+
+figure(1);
+nIterations = 70;
+
+emEstRec = zeros([pxinfo.pxSizePadded nGates]);
+respSigRec = zeros(nGates,nIterations);
 
 % CHECK ALL OF THE FOLLOWING AGAINST BEST-WORKING MEMCIR
 % Don't forget to include extended field of view stuff
@@ -118,51 +134,67 @@ for itNum = 1:nIterations
     % IMAGE UPDATE:
     
     % Estimate motion fields
-    [dHF,dAP,dRL] = EstimateFieldsFromModel(respSig,motionModel,'fwd',pxinfo);
-    [dHFinv,dAPinv,dRLinv] = EstimateFieldsFromModel(respSig,motionModel,'inv',pxinfo);
+    [dHF,dAP,dRL] = EstimateFieldsFromModel(respSigEst,motionModel,'fwd',pxinfo);
+    [dHFinv,dAPinv,dRLinv] = EstimateFieldsFromModel(respSigEst,motionModel,'inv',pxinfo);
     
     % Transform emission and attenuation map estimates
-    [transEmMap,transMuMap] = TransformMaps(emMap,muMap,pxinfo,dHF,dAP,dRL,interpType,0);
+    transEmEst = TransformImage(emEst,pxinfo,dHF,dAP,dRL,interpType,0);
+    transMuEst = TransformImage(muEst,pxinfo,dHF,dAP,dRL,interpType,0);
+    
+%     figure(1);
+%     for t = 1:nGates
+%         imagesc(squeeze(est.AFs{t}(:,110,1:128))'); title(t); axis image;
+%       %  imagesc(squeeze(transEmEst{t}(:,177,:))'); title(t); axis image;
+%         drawnow;
+%         pause(0.5);
+%     end
     
     % Project transformed maps
-    est.AFs = SimulateAttFactors(transMuMap,projectorType,pxinfo);
-    est.trues = SimulateTrueDistribution(transEmMap,projectorType,pxinfo);
+    est.AFs = SimulateAttFactors(transMuEst,projectorType,pxinfo);
+    est.trues = SimulateTrueDistribution(transEmEst,projectorType,pxinfo);
     
     % Calculate new sensitivity image
-    SensitivityImage = CalculateSensitivity(est.AFs,dHFinv,dAPinv,dRLinv,projectorType,pxinfo);
+    sensitivityImage = CalculateSensitivity(est.AFs,dHFinv,dAPinv,dRLinv,projectorType,interpType,pxinfo);
     
     % Calculate ratio sinograms and generate update images
     ratioSinos = cell(1,nGates);
     for g = 1:nGates
         est.prompts{g} = est.norm{g}.*est.AFs{g}.*est.trues{g} + est.scatters{g} + est.randoms{g};
-        ratioSinos{g} = dataSinograms{g}./prompts{g};
+        ratioSinos{g} = dataSinograms{g}./est.prompts{g};
     end
-    ratioImages = BckProject(ratioSinos,projectorType,pxinfo);
+    ratioImages = BckProject(ratioSinos,projectorType,interpType,pxinfo);
     updateImages = TransformImage(ratioImages,pxinfo,dHFinv,dAPinv,dRLinv,interpType,0);
     
     % Sum over updateImages and apply sensitivity correction
     temp = zeros(pxinfo.pxSizePadded);
     for g = 1:nGates, temp = temp + updateImages{g}; end
-    updateImage = temp./SensitivityImage; clear temp;
+    updateImage = temp./sensitivityImage; clear temp;
     
     % update image variable
-    emEst = emEst.*updateImg;
+    emEst = emEst.*updateImage;
+    
+    emEstRec(:,:,:,itNum) = emEst;
+    
+    subplot(121);
+    imagesc(squeeze(emEst(:,160,:))'); title(itNum);
+    axis image;
+    drawnow;
     
     % RESPSIG UPDATE
 
-    transEmMap = TransformImage(emMap,pxinfo,dHF,dAP,dRL,interpType,0);
-    est.trues = SimulateTrueDistribution(transEmMap,projectorType);
+    transEmEst = TransformImage(emEst,pxinfo,dHF,dAP,dRL,interpType,0);
+    est.trues = SimulateTrueDistribution(transEmEst,projectorType,pxinfo);
     ratioSinos = cell(1,nGates);
     for g = 1:nGates
         est.prompts{g} = est.norm{g}.*est.AFs{g}.*est.trues{g} + est.scatters{g} + est.randoms{g};
-        ratioSinos{g} = dataSinograms{g}./prompts{g};
+        ratioSinos{g} = dataSinograms{g}./est.prompts{g};
     end
     
     % Find the motion-model-derivative--weighted sinograms
-    [emWeightSinos,muWeightSinos] = CalcWeightedSinos(transEmMap,transMuMap,phi,respSigEst,pxinfo);
+    [emWeightSinos,muWeightSinos] = CalcWeightedSinos(transEmEst,transMuEst,motionModel,respSigEst,pxinfo,projectorType);
     
     % Combined weights for update sinograms [this will be data-model--dependent]
-    for g = 1:ngates
+    for g = 1:nGates
         totWeightSino{g} = est.AFs{g}.*emWeightSinos{g} - est.prompts{g}.*muWeightSinos{g};
     end
 
@@ -172,17 +204,24 @@ for itNum = 1:nIterations
         RespSigUpdateSinos{g} = (ratioSinos{g}-1).*totWeightSino{g};
         RespSigUpdateSinos{g}(isnan(RespSigUpdateSinos{g})|isinf(RespSigUpdateSinos{g})) = 0;
 
-        RespSigUpdate(g) = sum(RespSigUpdateSinos{g}(:).*roiSino(:));
+        RespSigUpdate(g) = sum(RespSigUpdateSinos{g}(:).*roiSino{1}(:));
     end
 
-    if k <= wait_its
+    if itNum <= wait_its
         stepsize = 0;
     else
-        stepsize = 0;
+        if itNum == (wait_its+1)
+            stepsize = 1/sum(abs(RespSigUpdate));
+        end
     end
     
     % update respiratory signal estimates
     respSigEst = respSigEst + stepsize*RespSigUpdate;    
+    
+    respSigRec(:,itNum) = respSigEst;
+    
+    subplot(122);
+    plot(respSigRec'); xlim([1 nIterations]); drawnow;
     
 end
 

@@ -4,12 +4,15 @@ function [bckProjImage] = BckProject(sinoToProject,projectorType,interpType,pxin
 % 	using a back-projector function, specified by projectorType.
 %	Remember that this is NOT the inverse of the FwdProject function.
 
-
 if iscell(sinoToProject)
 	nToProject = numel(sinoToProject);
 else
-	nToProject = 1;
-	sinoToProject{1} = sinoToProject;
+	nToProject = size(sinoToProject,4);
+    for it = 1:nToProject
+		temp{it} = sinoToProject(:,:,:,4);
+    end
+    sinoToProject = temp;
+    clear temp;
 end
 
 % For each sinogram to be projected:
@@ -19,11 +22,13 @@ for it = 1:nToProject
 	switch projectorType
 	% Matlab's basic projectors
 	case 1
+        theta = linspace(0,179,pxinfo.sino(2));
+
 		temp = zeros(pxinfo.pxSize);
-		for zz = 1:nz
-			temp(:,:,zz) = iradon(sinoToProject(:,:,zz),0:179,interpType,'none');
+		parfor zz = 1:pxinfo.pxSize(3)
+			temp(:,:,zz) = iradon(sinoToProject{it}(:,:,zz),theta,interpType,'none',pxinfo.pxSize(1));
 		end
-		bckProjImage{it} = temp(2:(end-1),2:(end-1),:);
+		bckProjImage{it} = temp;
 		clear temp;
 
 	% CECR projectors
@@ -31,23 +36,21 @@ for it = 1:nToProject
 		InitialiseCECR;
 
 		%img=cecrbck(sino,scannerModelFile,scannerModelNumber,totalThreadNumber,totalSubsetNumber,subsetIndex,verbose_level);
-		bckProjImage{it} = cecrbck(single(sinoToProject),input_file,5002,32,1,0,0);
+		bckProjImage{it} = cecrbck(single(sinoToProject{it}),input_file,5002,32,1,0,0);
 
 	% APIRL projectors
 	case 3
 		InitialiseApirl;
 
-		bckProjImage{it} = PET.PT(sinoToProject);
+		bckProjImage{it} = PET.PT(sinoToProject{it});
 
 	% Handle projectorType not_in {1,2,3}
 	otherwise
 		error('Unrecognised projectorType requested')
 	end
-
-	bckProjImage{it} = ToggleImagePadding(bckProjImage{it},pxinfo);
 end
 
-warning('BckProject is currently stubbed: does not pad images')
-
+% Pad images to padded FOV size:
+bckProjImage = ToggleImagePadding(bckProjImage,pxinfo);
 
 end

@@ -40,7 +40,7 @@ for it = 1:nToProject
         
         % Following projection angles are hard-coded to match mMR
         % projectors:
-        theta = linspace(0,179,252);
+        theta = linspace(0,179,pxinfo.sino(2));
         % Parallel-process the projectors
 		parproject = zeros([pxinfo.sino(1:2) 127]);
 		parfor zz = 1:pxinfo.pxSize(3)

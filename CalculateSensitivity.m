@@ -15,10 +15,19 @@ function [sensitivityImage] = CalculateSensitivity(attAndNormFactors,dHF,dAP,dRL
 if iscell(dHF)
 	nTransformations = numel(dHF);
 else
-	nTransformations = 1;
-	dHF{1} = dHF;
-	dAP{1} = dAP;
-	dRL{1} = dRL;
+	nTransformations = size(dHF,4);
+    for it = 1:nTransformations
+        dHF_temp{it} = dHF(:,:,:,it);
+    end
+    dHF = dHF_temp; clear dHF_temp;
+    for it = 1:nTransformations
+        dAP_temp{it} = dAP(:,:,:,it);
+    end
+    dAP = dAP_temp; clear dAP_temp;
+    for it = 1:nTransformations
+        dRL_temp{it} = dRL(:,:,:,it);
+    end
+    dRL = dRL_temp; clear dRL_temp;    
 end
 
 if iscell(attAndNormFactors)
@@ -32,20 +41,20 @@ end
 % NOTE: The BckProject function automatically pads the resulting image(s)
 if (nFactorImages == 1) && (nTransformations > 1)
 	% Transform same image many times (only 1 backprojection required)
-	temp = BckProject(attAndNormFactors,projectorType,interpType,pxinfo);
-	for it = 1:nTransformations
+	temp = BckProject(attAndNormFactors,projectorType,interpType,pixelInfo);
+    for it = 1:nTransformations
 		normImages{it} = temp;
 	end
 elseif (nFactorImages == nTransformations) && (nTransformations > 1)
 	% Need to backproject each sens factor sinogram prior to transformation
-	normImages = BckProject(attAndNormFactors,projectorType,interpType,pxinfo);
+	normImages =  BckProject(attAndNormFactors,projectorType,interpType,pixelInfo);
 else
 	error('Inconsistent number of transformations relative to number of sensitivity sinograms');
 end
 
 %% Transform and generate sensitivity image
 % (Note that TransformImage can operate with a cell of multiple images)
-sensitivityContributions = TransformImage(normImages,pxinfo,dHF,dAP,dRL,interpType,0);
+sensitivityContributions = TransformImage(normImages,pixelInfo,dHF,dAP,dRL,interpType,0);
 
 sensitivityImage = zeros(pixelInfo.pxSizePadded);
 for it = 1:nTransformations
