@@ -135,7 +135,7 @@ switch dataStr
         end
         
         % Motion fields
-        datasetInfoStruct.nDynamics = 10;
+        datasetInfoStruct.nDynamics = 4;
         datasetInfoStruct.refDynNum = 1;
         % - forward (ref -> postion)
         for it = 1:datasetInfoStruct.nDynamics

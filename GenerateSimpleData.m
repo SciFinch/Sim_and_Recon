@@ -111,9 +111,9 @@ emmap(imvol==3) = 2; % warm
 emmap(imvol==2) = 5; % hot
 
 % Save numerical phantoms:
-giplwrite(datainfo.maps.emission.fn,emmap*100,'short_noscale',pxinfo.pxdims,eye(4,4));
-giplwrite(datainfo.maps.attenuation.human,mumap*10000,'short_noscale',pxinfo.pxdims,eye(4,4));
-giplwrite(datainfo.maps.attenuation.hardware,0,'short_noscale',pxinfo.pxdims,eye(4,4));
+giplwrite(datainfo.maps.emission.fn,emmap*100,'short_noscale',pxinfo.pxdims);
+giplwrite(datainfo.maps.attenuation.human,mumap*10000,'short_noscale',pxinfo.pxdims);
+giplwrite(datainfo.maps.attenuation.hardware,0,'short_noscale',pxinfo.pxdims);
 
 if flags.visualise
     figure(1);
@@ -146,7 +146,7 @@ end
 % centre of the phantom. This could be extended to a 'navigator', and could
 % also be extended to non-rigid models.
 
-nTimeSteps = datainfo.nDynamics; % currently =10 (hardcoded)
+nTimeSteps = datainfo.nDynamics; % currently = 4 (hardcoded)
 model_type = 'linear';
 % model_type = 'quadratic';
 

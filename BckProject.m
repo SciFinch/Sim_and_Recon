@@ -34,10 +34,15 @@ for it = 1:nToProject
 	% CECR projectors
 	case 2
 		InitialiseCECR;
+        
+        % Note: the projectors are insensitive to a global scale factor in
+        % the images, so a factor of 1000 is used to avoid a bug where
+        % input values smaller than 1E-5 produce an output of 0
 
 		%img=cecrbck(sino,scannerModelFile,scannerModelNumber,totalThreadNumber,totalSubsetNumber,subsetIndex,verbose_level);
-		bckProjImage{it} = cecrbck(single(sinoToProject{it}),input_file,5002,32,1,0,0);
-
+		bckProjImage{it} = cecrbck(1000*single(sinoToProject{it}),input_file,5002,32,1,0,0);
+        bckProjImage{it} = bckProjImage{it}/1000;
+        
 	% APIRL projectors
 	case 3
 		InitialiseApirl;

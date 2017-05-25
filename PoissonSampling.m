@@ -47,7 +47,7 @@ end
 noisySinograms = cell(1,nToMakeNoisy);
 for g = 1:nToMakeNoisy
 	% Current sinogram [normalised so that sum(dynamicSino) = 1]:
-	toMakeNoisy = meanDistbnSino{it}/currTotCounts;
+	toMakeNoisy = meanDistbnSino{g}/currTotCounts;
 
 	% Now scale to desired number of counts [this is only separate to the above for readability]
 	% Note that this depends not just on total counts, but the fraction of time spent in the position

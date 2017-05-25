@@ -31,9 +31,11 @@ end
 %     scatterSinograms{1} = zeros(pixelInfo.sino);
 % end
 
-if projectorType == 1
+if projectorType == 1 ||  projectorType == 2
     ScatterMthd = 'none';
-    pixelInfo.sino = [pixelInfo.sino(1) pixelInfo.sino(2) 127];
+    if projectorType == 1
+        pixelInfo.sino = [pixelInfo.sino(1) pixelInfo.sino(2) 127];
+    end
     warning('Scatter Sims not defined for Radon projectors (yet). Defaulting to NONE case');
 end
 
