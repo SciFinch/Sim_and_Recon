@@ -219,7 +219,7 @@ for itNum = startIt:nIterations
             RespSigUpdateSinos{g} = (ratioSinos{g}-1).*totWeightSino{g};
             RespSigUpdateSinos{g}(isnan(RespSigUpdateSinos{g})|isinf(RespSigUpdateSinos{g})) = 0;
             
-            RespSigUpdate(g) = sum(RespSigUpdateSinos{g}(:).*roiSino{1}(:));
+            RespSigUpdate(g) = -sum(RespSigUpdateSinos{g}(:).*roiSino{1}(:));
         end
         
     end
@@ -228,7 +228,7 @@ for itNum = startIt:nIterations
         RespSigUpdate = zeros(size(respSigEst));
     else
         if itNum == wait_its+1
-            stepsize = 1/sum(abs(RespSigUpdate));
+            stepsize = 3/sum(abs(RespSigUpdate));
         end
     end
     
@@ -243,17 +243,17 @@ for itNum = startIt:nIterations
     drawnow;
 end
 
-% %
-% 
-% figure;
-% for itNum = 1:nIterations
-%     subplot(121);
-%     imagesc(squeeze(emEstRec(:,175,:,itNum))'); title(itNum);
-%     axis image;
-%     drawnow;
-%     subplot(122);
-%     plot(respSigRec'); xlim([1 nIterations]);
-%     ylim([min(respSigs.all) - 0.2*range(respSigs.all), min(respSigs.all) + 1.2*range(respSigs.all)]);
-%     drawnow;
-%     pause(0.1);
-% end
+%
+
+figure;
+for itNum = 1:nIterations
+    subplot(121);
+    imagesc(squeeze(emEstRec(:,175,:,itNum))'); title(itNum);
+    axis image;
+    drawnow;
+    subplot(122);
+    plot(respSigRec'); xlim([1 nIterations]);
+    ylim([min(respSigs.all) - 0.2*range(respSigs.all), min(respSigs.all) + 1.2*range(respSigs.all)]);
+    drawnow;
+    pause(0.1);
+end
