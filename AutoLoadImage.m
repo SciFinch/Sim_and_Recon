@@ -17,15 +17,18 @@ if nargin == 1
 end
 
 % - identify possible scalefactor sometimes used to preserve decimal places
-scalefactor = 1;
-if strfind(fullFileName, 'x10')
-    scalefactor = 10;
-elseif strfind(fullFileName, 'x100')
-    scalefactor = 100;
+% note: Must start with highest number, otherwie 10x case would always be
+% first one identified. Could try regex instead.
+if strfind(fullFileName, 'x10000')
+    scalefactor = 10000;
 elseif strfind(fullFileName, 'x1000')
     scalefactor = 1000;
-elseif strfind(fullFileName, 'x10000')
-    scalefactor = 10000;
+elseif strfind(fullFileName, 'x100')
+    scalefactor = 100;
+elseif strfind(fullFileName, 'x10')
+    scalefactor = 10;
+else
+    scalefactor = 1;
 end
 
 % - identify filetype and load
@@ -51,13 +54,14 @@ end
 
 switch formatStr
 case 'gipl'
-	addpath('C:\Users\db12\Dropbox\Work_Docs\MATLAB Scripts\giplread.m');
-	[imageArray, imageSize, imagePixelDims] = giplread(filename);
+	oldPath = addpath('C:\Users\db12\Dropbox\Work_Docs\MATLAB Scripts\');
+	[imageArray, imageSize, imagePixelDims] = giplread(fullFileName);
 	imageArray = imageArray/scalefactor;
+    path(oldPath); clear oldPath;
 case 'nifti'
 	error('nifti file loader hasnt been checked yet');	
 	addpath('C:\Users\db12\Google Drive\CommonLib\DeedsRegistration\toolbox_matlab_nifti\');
-	dataStruct = MRIread(filename);
+	dataStruct = MRIread(fullFileName);
 	imageArray = dataStruct.vol/scalefactor;
 	imageSize = dataStruct;
 	imagePixelDims = dataStruct;
@@ -67,16 +71,15 @@ case 'interfile'
 	imageSize = [];
 	imagePixelDims = [];
 case 'mat'
-	error('mat file loader hasnt been checked yet');
+	warning('mat file loader hasnt been checked yet');
 	% warning: this assumes the opposite function was used to save the data
 	if ~isempty(varName)
-		dataStruct = load(filename,varName);
+		dataStruct = load(fullFileName,varName);
 		imageSize = [];
 		imagePixelDims = [];
 	else
-		dataStruct = load(filename);
+		dataStruct = load(fullFileName);
 	end
-
 case 'dat'
 	warning('Read-in for .dat format is currently a stub');
 	imageArray = [];

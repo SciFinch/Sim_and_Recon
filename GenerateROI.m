@@ -7,18 +7,20 @@ function roiImage = GenerateROI(datasetStr,regionID,pixelInfo)
 %   distribution of a given dataset's FDG map. The main function of this
 %   code is to tidy this up and make it more repeatable.
 
-if strcmp(datasetStr,'stub')
-    
-    if strcmp(regionID,'all')
-        roiImage = ones(344,344,127);
-        
-    elseif strcmp(regionID,'RHS')
-        roiImage = ones(344,344,127); 
-        warning('RHS ROI specification is a stub')
-    end
-    
-else
-    error('Dataset string not recognised')
+
+switch datasetStr
+    case 'simple'
+        roiImage = ones(pixelInfo.pxSize);
+    case 'stub'
+        if strcmp(regionID,'all')
+            roiImage = ones(pixelInfo.pxSize);
+            
+        elseif strcmp(regionID,'RHS')
+            roiImage = ones(pixelInfo.pxSize);
+            warning('RHS ROI specification is a stub')
+        end
+    otherwise
+        error('Dataset string not recognised')
 end
 
 end

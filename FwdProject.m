@@ -16,8 +16,8 @@ else
 end
 
 % If padded, crop to make compatible with projector sizes:
-currSize = size(imgToProject{1});
-if abs(sum(currSize(1:3) - pxinfo.pxSizePadded)) < 1E-4
+flags.isPadded.imgToProject = CheckPadding(imgToProject,pxinfo);
+if flags.isPadded.imgToProject
     % Padded image, therefore crop:
     toProject_unpadded = ToggleImagePadding(imgToProject,pxinfo);
 else
@@ -38,7 +38,10 @@ for it = 1:nToProject
 			error('Matlab projector requires number of transaxial image slices == those in the sinogram');
         end
         
-        theta = linspace(0,179,252);
+        % Following projection angles are hard-coded to match mMR
+        % projectors:
+        theta = linspace(0,179,pxinfo.sino(2));
+        % Parallel-process the projectors
 		parproject = zeros([pxinfo.sino(1:2) 127]);
 		parfor zz = 1:pxinfo.pxSize(3)
 	    	[temp,xp] = radon(toProject_unpadded{it}(:,:,zz),theta);

@@ -31,14 +31,7 @@ else
 end
 
 % Determine whether the image is to be padded or cropped
-currSize = size(imgToResize{1});
-if abs(sum(currSize(1:3) - pxinfo.pxSize)) < 1E-4
-	flags.isPadded = false;
-elseif abs(sum(currSize(1:3) - pxinfo.pxSizePadded)) < 1E-4
-	flags.isPadded = true;
-else
-	error('Unable to determine whether image is padded or not.');
-end
+flags.isPadded = CheckPadding(imgToResize,pxinfo);
 
 % Apply cropping/padding to each input image:
 for it = 1:nToResize

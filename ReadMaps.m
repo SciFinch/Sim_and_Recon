@@ -55,9 +55,9 @@ case 'CK1'
 	emMap(225:end,:,:) = 0;
 end
 
-% Assumng orientation [AP RL HF]
-if ~(sum(sum(emMap(1,:,:))) + sum(sum(emMap(end,:,:))) + sum(sum(emMap(:,1,:))) + sum(sum(emMap(:,end,:))))
-	warning('Edges of transaxial plane are non-zero');
+% Assumng orientation [AP RL HF], check edges of FOV are zero, as expected
+if abs(sum(sum(emMap(1,:,:))) + sum(sum(emMap(end,:,:))) + sum(sum(emMap(:,1,:))) + sum(sum(emMap(:,end,:)))) > 10*eps
+	warning('Edges of transaxial planes in FOV are non-zero (this is unexpected)');
 end
 
 end

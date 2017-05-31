@@ -12,10 +12,8 @@ function [motionModel] = ReadMotionModels(datasetStr)
 % 3. Check and standardise orientation of each dataset
 
 datasetInfoStruct = GetDatasetInfo(datasetStr);
-warning('ReadMotionModels is currently a stub');
 
-load(datasetInfoStruct.motionModels.all)
-
+data = load(datasetInfoStruct.motionModels.all);
+motionModel = data.motionModel;
     
 end
-%'motionModel'
