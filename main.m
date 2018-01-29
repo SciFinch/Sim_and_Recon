@@ -1,5 +1,5 @@
 %% Main execution file for project
-addpath('C:\Users\db12\Sim_and_Recon\branches\TestProjectors');
+addpath('C:\Users\db12\Sim_and_Recon\branches\quicktest');
 % Useful for testing:
 %imagesc(squeeze(imageCell{1}(:,110,1:127))'); axis image; colormap;
 
@@ -7,7 +7,7 @@ addpath('C:\Users\db12\Sim_and_Recon\branches\TestProjectors');
 % general
 datainfo = 'simple';
 interpType = 'linear';
-projectorType = 2;
+projectorType = 3;
 flags.fullSimulation = true; % if false, either CKX dataset, or load sims
 
 % dimensional data
@@ -21,7 +21,7 @@ pxinfo.sino = [344 252 837]; % size of (3D, span-11) sinogram
 
 % simulation specifications
 nGates = 4;
-scatterMthd = 'conv';
+scatterMthd = 'none'; %'conv';
 randMthd = 'none';
 totCounts = 75E6;
 dynamicWeights = ones(1,nGates)/nGates;
@@ -63,6 +63,7 @@ warning('ensure that cm conversion is included in all atten procs')
 
 % Generate normalisation factor sinograms
 sim.norm = SimulateNormFactors(projectorType,pxinfo,datainfo);
+temp = cell(1,nGates);
 for it = 1:nGates
     temp{it} = sim.norm{1};
 end
@@ -120,7 +121,7 @@ est.scatters = sim.scatters;
 muEst = ToggleImagePadding(muMap,pxinfo);
 
 figure(1);
-nIterations = 70;
+nIterations = 20;
 wait_its = 6;
 
 startIt = 1;

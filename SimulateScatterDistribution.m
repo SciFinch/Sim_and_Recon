@@ -46,14 +46,14 @@ switch ScatterMthd
         for it = 1:nToSimulate
             scatterSinograms{it} = zeros(pixelInfo.sino);
         end
-        % Simple convolution-based scatter simulation (Bailey 1993)
-    case 'simple'
+    % Simple convolution-based scatter simulation (Bailey 1993)
+    case 'simple' | 'conv'
         scatterSinograms = cell(1,nToSimulate);
         for it = 1:nToSimulate
             fprintf(' - Simulating scatter sinograms (simple): Dynamic sinogram %d/%d\n',it,nToSimulate);
             scatterSinograms{it} = ConvScatterEstimation(trueSino{it},attFactorSino{it},randSino{it},'Bailey93');
         end
-        % Single scatter simulation (Watson 2000):
+    % Single scatter simulation (Watson 2000):
     case 'SSS'
         error('SSS not currently implemented');
         %scatterSinograms = cell(1,nToSimulate);
@@ -61,7 +61,7 @@ switch ScatterMthd
         %	fprintf('== Simulating scatter sinograms (SSS): Dynamic sinogram %d/%d',it,nToSimulate);
         %	scatterSinograms{it} = SingleScatterSimulation(trueSino{it},attFactorSino{it},randSino{it},'Watson00');
         %end
-        % Monte Carlo simulation (very slow)
+    % Monte Carlo simulation (very slow)
     case 'MonteCarlo'
         error('Monte Carlo scatter simulation not currently implemented');
         % scatterSinograms = cell(1,nToSimulate);
@@ -69,7 +69,7 @@ switch ScatterMthd
         % 	fprintf('== Simulating scatter sinograms (Monte Carlo): Dynamic sinogram %d/%d',it,nToSimulate);
         % 	scatterSinograms{it} = MonteCarloScatterEstimation(trueSino{it},attFactorSino{it},randSino{it},'Zaidi01');
         % end
-        % Error handling:
+    % Error handling:
     otherwise
         error('Unrecognised scatter simulation method requested - has it been implemented yet?');
 end
