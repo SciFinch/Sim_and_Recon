@@ -1,8 +1,14 @@
-function [bckProjImage] = BckProject(sinoToProject,projectorType,interpType,pxinfo)
-% BCKPROJECT [bckProjImage] = BckProject(sinoToProject,projectorType,interpType,pxinfo)
+function [bckProjImage] = BckProject(sinoToProject,projectorType,interpType,pxinfo,subsetNum)
+% BCKPROJECT [bckProjImage] = BckProject(sinoToProject,projectorType,interpType,pxinfo,subsetNum)
 %	This function will take a sinogram and calculate a 3D image
 % 	using a back-projector function, specified by projectorType.
 %	Remember that this is NOT the inverse of the FwdProject function.
+
+nSubsets = 21;
+nAnglesPerSubset = 12;
+if nargin < 5
+    subsetNum = -1;
+end
 
 if iscell(sinoToProject)
 	nToProject = numel(sinoToProject);
@@ -23,16 +29,30 @@ for it = 1:nToProject
 	% Matlab's basic projectors
 	case 1
         theta = linspace(0,179,pxinfo.sino(2));
-
+        
+        if subsetNum > 0
+            subsetIdx = GetSubsetIndices(subsetNum); %shuffled
+            angles_to_project = theta(subsetIdx);
+            
+            if size(sinoToProject{it},2) ~= nAnglesPerSubset
+                error('Expected a subset sinogram');
+            end
+        else
+            angles_to_project = theta;
+        end
+        
 		temp = zeros(pxinfo.pxSize);
 		parfor zz = 1:pxinfo.pxSize(3)
-			temp(:,:,zz) = iradon(sinoToProject{it}(:,:,zz),theta,interpType,'none',pxinfo.pxSize(1));
+			temp(:,:,zz) = iradon(sinoToProject{it}(:,:,zz),angles_to_project,interpType,'none',pxinfo.pxSize(1));
 		end
 		bckProjImage{it} = temp;
 		clear temp;
 
 	% CECR projectors
 	case 2
+        if subsetNum > 0
+            error('subset initialisation not defined for CECR projectors');
+        end
 		InitialiseCECR;
         
         % Note: the projectors are insensitive to a global scale factor in
@@ -45,6 +65,9 @@ for it = 1:nToProject
         
 	% APIRL projectors
 	case 3
+        if subsetNum > 0
+            error('subset initialisation not defined for APIRL projectors');
+        end        
 		InitialiseApirl;
 
 		bckProjImage{it} = PET.PT(sinoToProject{it});
