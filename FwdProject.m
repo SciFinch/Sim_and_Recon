@@ -1,9 +1,14 @@
-function [sinograms] = FwdProject(imgToProject,projectorType,pxinfo)
-% FWDPROJECT [sinograms] = FwdProject(imgToProject,projectorType,pxinfo)
+function [sinograms] = FwdProject(imgToProject,projectorType,pxinfo,subsetNum)
+% FWDPROJECT [sinograms] = FwdProject(imgToProject,projectorType,pxinfo,subsetInfo)
 %	This function will take volumetric images and calculate a 3D sinogram for each
 % 	using a projector function, specified by projectorType.
 %	NOTE: if images are provided with an extended FOV, they will be de-padded automatically.
 
+nSubsets = 21;
+nAnglesPerSubset = 12;
+if nargin < 4
+    subsetNum = -1;
+end
 
 % Ensure input is cell format, otherwise make compatible:
 if iscell(imgToProject)
@@ -41,10 +46,18 @@ for it = 1:nToProject
         % Following projection angles are hard-coded to match mMR
         % projectors:
         theta = linspace(0,179,pxinfo.sino(2));
+        
+        if subsetNum > 0
+            subsetIdx = GetSubsetIndices(subsetNum); %shuffled
+            angles_to_project = theta(subsetIdx);
+        else
+            angles_to_project = theta;
+        end
+        
         % Parallel-process the projectors
-		parproject = zeros([pxinfo.sino(1:2) 127]);
+		parproject = zeros([pxinfo.sino(1) numel(angles_to_project) 127]);
 		parfor zz = 1:pxinfo.pxSize(3)
-	    	[temp,xp] = radon(toProject_unpadded{it}(:,:,zz),theta);
+	    	[temp,xp] = radon(toProject_unpadded{it}(:,:,zz),angles_to_project);
             [~,lowR] = max(xp==-344/2);
             [~,highR] = max(xp==+344/2);
 	    	parproject(:,:,zz) = temp(lowR+1:highR,:);

@@ -37,7 +37,9 @@ else
         % APIRL NF method currently not used
         case 3
             %InitialiseApirl;
-            error('Calculating NF sino for APIRL without data not currently implemented')
+            warning('Calculating NF sino for APIRL without data not currently implemented')
+            normImage = ones(pixelInfo.pxSize);
+            normFactorSinogram = FwdProject(normImage,projectorType,pixelInfo);            
         otherwise
             error('Unrecognised projectorType provided');
     end

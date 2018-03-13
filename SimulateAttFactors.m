@@ -47,7 +47,8 @@ switch projectorType
     case 3
         InitialiseApirl;
         for it = 1:nToProject
-            ACFsino = PET.ACF(transMuMap{it}); %%%!!!
+            refImage = imref3d(size(transMuMap{it}),pixelInfo.pxdims(1),pixelInfo.pxdims(2),pixelInfo.pxdims(3));
+            ACFsino = PET.ACF(transMuMap{it},refImage); %%%!!!
             attFactorSinograms{it} = ACFsino;
             attFactorSinograms{it}(attFactorSinograms{it}~=0) = 1./attFactorSinograms{it}(attFactorSinograms{it}~=0);
         end

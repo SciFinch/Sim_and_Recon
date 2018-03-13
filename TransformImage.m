@@ -71,13 +71,13 @@ flags.isPadded.motionFields = CheckPadding(dHF,pxinfo);
 warning('Orientations in TransformImage need verifying')
 if flags.isPadded.imgToTrans == true
     % i.e., use padded coordinate system:
-    ap_vec = linspace(pxinfo.pxdims(1),pxinfo.pxdims(1)*pxinfo.pxSizePadded(1),pxinfo.pxSizePadded(1));
-    rl_vec = linspace(pxinfo.pxdims(2),pxinfo.pxdims(2)*pxinfo.pxSizePadded(2),pxinfo.pxSizePadded(2));
-    hf_vec = linspace(pxinfo.pxdims(3),pxinfo.pxdims(3)*pxinfo.pxSizePadded(3),pxinfo.pxSizePadded(3));
+    ap_vec = linspace(-pxinfo.pxdims(1)*pxinfo.pxSizePadded(1)/2,pxinfo.pxdims(1)*pxinfo.pxSizePadded(1)/2,pxinfo.pxSizePadded(1));
+    rl_vec = linspace(-pxinfo.pxdims(2)*pxinfo.pxSizePadded(2)/2,pxinfo.pxdims(2)*pxinfo.pxSizePadded(2)/2,pxinfo.pxSizePadded(2));
+    hf_vec = linspace(-pxinfo.pxdims(3)*pxinfo.pxSizePadded(3)/2,pxinfo.pxdims(3)*pxinfo.pxSizePadded(3)/2,pxinfo.pxSizePadded(3));
 else
-    ap_vec = linspace(pxinfo.pxdims(1),pxinfo.pxdims(1)*pxinfo.pxSize(1),pxinfo.pxSize(1));
-    rl_vec = linspace(pxinfo.pxdims(2),pxinfo.pxdims(2)*pxinfo.pxSize(2),pxinfo.pxSize(2));
-    hf_vec = linspace(pxinfo.pxdims(3),pxinfo.pxdims(3)*pxinfo.pxSize(3),pxinfo.pxSize(3));
+    ap_vec = linspace(-pxinfo.pxdims(1)*pxinfo.pxSize(1)/2,pxinfo.pxdims(1)*pxinfo.pxSize(1)/2,pxinfo.pxSize(1));
+    rl_vec = linspace(-pxinfo.pxdims(2)*pxinfo.pxSize(2)/2,pxinfo.pxdims(2)*pxinfo.pxSize(2)/2,pxinfo.pxSize(2));
+    hf_vec = linspace(-pxinfo.pxdims(3)*pxinfo.pxSize(3)/2,pxinfo.pxdims(3)*pxinfo.pxSize(3)/2,pxinfo.pxSize(3));
 end
 [coords.ap,coords.rl,coords.hf] = ndgrid(ap_vec,rl_vec,hf_vec);
 clear *vec;
